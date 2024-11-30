@@ -3,4 +3,4 @@ project(ProjectC)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(TP_IIA main.c algoritmo.c funcao.c utils.c)
+add_executable(Trabalho_IIA main.c algoritmo.c funcao.c utils.c)

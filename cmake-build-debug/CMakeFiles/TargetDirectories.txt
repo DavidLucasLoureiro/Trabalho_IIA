@@ -1,3 +1,3 @@
-C:/Users/david/CLionProjects/TP_IIA/cmake-build-debug/CMakeFiles/TP_IIA.dir
+C:/Users/david/CLionProjects/TP_IIA/cmake-build-debug/CMakeFiles/Trabalho_IIA.dir
 C:/Users/david/CLionProjects/TP_IIA/cmake-build-debug/CMakeFiles/edit_cache.dir
 C:/Users/david/CLionProjects/TP_IIA/cmake-build-debug/CMakeFiles/rebuild_cache.dir

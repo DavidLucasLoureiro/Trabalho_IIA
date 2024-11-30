@@ -1,19 +1,26 @@
 #include "funcao.h"
+#include <math.h>
 
-// Calcula a qualidade de uma solução
-// Recebe:  A solução, a, a matriz de adjacências, mat, e o número de vértices, vert
-// Devolve: O custo que é o número de ligações que existem na solução
-int calcula_fit(int a[], int *mat, int vert)
+// Calcula a qualidade de uma soluÃ§Ã£o
+// Penaliza soluÃ§Ãµes invÃ¡lidas (soma diferente do valor alvo)
+double calcula_fit(int a[], double valores_moedas[], int n_moedas, double valor_alvo)
 {
-	int total=0;
-	int i, j;
+    double soma = 0.0;
+    int total_moedas = 0;
 
-	for(i=0; i<vert; i++)
-		if(a[i]==0)
-		{
-			for(j=0; j<vert;j++)
-				if(a[j]==1 && *(mat+i*vert+j)==1)
-				    total++;
-		}
-	return total;
+    // Calcula a soma total e o nÃºmero de moedas usadas
+    for (int i = 0; i < n_moedas; i++) {
+        soma += a[i] * valores_moedas[i];
+        total_moedas += a[i];
+    }
+
+    // Penaliza soluÃ§Ãµes invÃ¡lidas (soma diferente do valor alvo)
+    if (fabs(soma - valor_alvo) > 1e-6) {
+        // Reduz a penalizaÃ§Ã£o proporcional ao valor alvo
+        double penalizacao = fabs(soma - valor_alvo) * 10;
+        return total_moedas + penalizacao;
+    }
+
+    // Retorna o nÃºmero de moedas para soluÃ§Ãµes vÃ¡lidas
+    return total_moedas;
 }

@@ -1,2 +1,1 @@
-int trepa_colinas(int sol[], int *mat, int vert, int num_iter);
-int recristalizacao(int sol[], int *mat, int vert, int num_iter,float tMax, float tMin, float alpha);
+double trepa_colinas(int sol[], double valores_moedas[], int n_moedas, double valor_alvo, int num_iter);

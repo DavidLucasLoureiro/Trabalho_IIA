@@ -3,91 +3,75 @@
 #include <time.h>
 #include "utils.h"
 
-// Leitura do ficheiro de input
-// Recebe: nome do ficheiro, numero de vertices (ptr), numero de iteracoes (ptr)
-// Devolve a matriz de adjacencias
-int* init_dados(char *nome, int *diff_moedas, float *v)
+// Lê os dados do ficheiro no formato especificado
+// O ficheiro contém o número de moedas (n_moedas), o valor alvo (valor_alvo) e os valores das moedas
+double *ler_dados(const char *filename, int *n_moedas, double *valor_alvo)
 {
-	FILE *f;
-	int *q;
-	int i, j;
+    FILE *file = fopen(filename, "r"); // Abre o ficheiro para leitura
+    if (!file)
+        return NULL;
 
-	f=fopen(nome, "r");
-	if(!f)
-	{
-		printf("Erro no acesso ao ficheiro dos dados\n");
-		exit(1);
-	}
-	// Numero de Moedas (N),Valor a alcançar (V)
-	fscanf(f, "%d %.2f", diff_moedas,v);
-	/*// Valor a alcançar (V)
-	fscanf(f, " %.2f", v);*/
+    // Lê o número de moedas e o valor alvo
+    fscanf(file, "%d %lf", n_moedas, valor_alvo);
 
-    int dif = malloc(sizeof(int)*(*diff_moedas));
-	q=dif;
-	// Preenchimento do array das moedas
-	for(i=0; i<*diff_moedas; i++)
-        fscanf(f, " %.2f", dif[i]);
-	fclose(f);
-	return dif;
+    // Aloca memória para o array de valores das moedas
+    double *moedas = malloc(sizeof(double) * (*n_moedas));
+    if (!moedas) {
+        fclose(file);
+        return NULL;
+    }
+
+    // Lê os valores das moedas
+    for (int i = 0; i < *n_moedas; i++)
+        fscanf(file, "%lf", &moedas[i]);
+
+    fclose(file); // Fecha o ficheiro
+    return moedas; // Retorna o array de valores das moedas
 }
 
-// Gera a solucao inicial
-// Parametros: solucao, numero de vertices
-void gera_sol_inicial(int *sol, int v)
+// Gera uma solução inicial zerada
+// Cada posição do vetor representa a quantidade de uma moeda específica usada
+void gera_sol_inicial(int *sol, int n_moedas)
 {
-	int i, x;
-
-	for(i=0; i<v; i++)
-        sol[i]=0;
-	for(i=0; i<v/2; i++)
-    {
-        do
-			x = random_l_h(0, v-1);
-        while(sol[x] != 0);
-        sol[x]=1;
+    for (int i = 0; i < n_moedas; i++) {
+        sol[i] = 0; // Inicialmente, nenhuma moeda é usada
     }
 }
 
-// Escreve solucao
-// Parametros: solucao e numero de vertices
-void escreve_sol(int *sol, int vert)
+// Exibe a solução no formato [qtd_moeda1, qtd_moeda2, ...]
+void escreve_sol(int *sol, int n_moedas)
 {
-	int i;
-
-	printf("\nConjunto A: ");
-	for(i=0; i<vert; i++)
-		if(sol[i]==0)
-			printf("%2d  ", i);
-	printf("\nConjunto B: ");
-	for(i=0; i<vert; i++)
-		if(sol[i]==1)
-			printf("%2d  ", i);
-	printf("\n");
+    printf("[");
+    for (int i = 0; i < n_moedas; i++) {
+        printf("%d", sol[i]); // Exibe a quantidade de cada moeda
+        if (i < n_moedas - 1)
+            printf(", "); // Adiciona separador entre valores
+    }
+    printf("]");
 }
 
-// copia vector b para a (tamanho n)
+// Copia os valores do vetor b para o vetor a (de tamanho n)
 void substitui(int a[], int b[], int n)
 {
-    int i;
-    for(i=0; i<n; i++)
-        a[i]=b[i];
+    for (int i = 0; i < n; i++) {
+        a[i] = b[i];
+    }
 }
 
-// Inicializa o gerador de numeros aleatorios
+// Inicializa o gerador de números aleatórios
 void init_rand()
 {
-	srand((unsigned)time(NULL));
+    srand((unsigned)time(NULL)); // Define a semente com base no tempo atual
 }
 
-// Devolve valor inteiro aleatorio entre min e max
+// Retorna um valor inteiro aleatório entre min e max (inclusive)
 int random_l_h(int min, int max)
 {
-	return min + rand() % (max-min+1);
+    return min + rand() % (max - min + 1);
 }
 
-// Devolve um valor real aleatorio do intervalo [0, 1]
+// Retorna um valor real aleatório no intervalo [0, 1]
 float rand_01()
 {
-	return ((float)rand())/RAND_MAX;
+    return ((float)rand()) / RAND_MAX;
 }
