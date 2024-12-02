@@ -50,6 +50,15 @@ void escreve_sol(int *sol, int n_moedas)
     printf("]");
 }
 
+void print_total(int *sol,double *valor_moedas ,int n_moedas){
+    double sum;
+    for (int i = 0; i < n_moedas; i++) {
+        sum += sol[i]*valor_moedas[i]; // Exibe a quantidade de cada moeda
+    }
+
+    printf("V final: %.2f\n",sum);
+}
+
 // Copia os valores do vetor b para o vetor a (de tamanho n)
 void substitui(int a[], int b[], int n)
 {

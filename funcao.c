@@ -1,6 +1,6 @@
 #include "funcao.h"
 #include <math.h>
-
+#include <stdio.h>
 // Calcula a qualidade de uma solução
 // Penaliza soluções inválidas (soma diferente do valor alvo)
 double calcula_fit(int a[], double valores_moedas[], int n_moedas, double valor_alvo)
@@ -16,11 +16,13 @@ double calcula_fit(int a[], double valores_moedas[], int n_moedas, double valor_
 
     // Penaliza soluções inválidas (soma diferente do valor alvo)
     if (fabs(soma - valor_alvo) > 1e-6) {
+        /*if((fabs(soma - valor_alvo)*100/valor_alvo)<=5){ // nao ta a fazer oque queria
+            return total_moedas + 99;
+        }*/
         // Reduz a penalização proporcional ao valor alvo
         double penalizacao = fabs(soma - valor_alvo) * 10;
         return total_moedas + penalizacao;
     }
-
     // Retorna o número de moedas para soluções válidas
     return total_moedas;
 }

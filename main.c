@@ -55,13 +55,13 @@ int main(int argc, char *argv[])
     // Executa o algoritmo para o número de repetições definido
     for (cntReps = 0; cntReps < n_repeticoes; cntReps++) {
         gera_sol_inicial(solucao, n_moedas); // Gera uma solução inicial aleatória ou zerada
-        custo = trepa_colinas(solucao, valores_moedas, n_moedas, valor_alvo, 1000); // Executa o algoritmo de Trepa-Colinas
+        custo = trepa_colinas(solucao, valores_moedas, n_moedas, valor_alvo, 10000); // Executa o algoritmo de Trepa-Colinas
 
         // Exibe a solução e o custo para esta repetição
         printf("\nRepeticao %d: Solucao: ", cntReps);
         escreve_sol(solucao, n_moedas);
         printf("\n Custo final: %.2f\n", custo);
-
+        print_total(melhor_solucao,valores_moedas , n_moedas);
         // Atualiza o MBF e verifica se a solução é a melhor encontrada até o momento
         mbf += custo;
         if (cntReps == 0 || custo < melhor_custo) {
@@ -74,7 +74,9 @@ int main(int argc, char *argv[])
     printf("\n\nMBF: %.2f\n", mbf / n_repeticoes);
     printf("\nMelhor solucao encontrada:");
     escreve_sol(melhor_solucao, n_moedas);
-    printf("Custo final: %.2f\n", melhor_custo);
+    printf("\nCusto final: %.2f\n", melhor_custo);
+    printf("\nV alvo: %.2f\n",valor_alvo);
+    print_total(melhor_solucao,valores_moedas , n_moedas);
 
     // Libera a memória alocada
     free(valores_moedas);
