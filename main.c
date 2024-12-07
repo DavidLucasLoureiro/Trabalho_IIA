@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
     melhor_custo = 1e9;
 
     // Executa o algoritmo para o número de repetições definido
-    for (cntReps = 0; cntReps < n_repeticoes; cntReps++) {
+    for (cntReps = 0; cntReps < 20; cntReps++) {
         gera_sol_inicial(solucao, n_moedas); // Gera uma solução inicial aleatória ou zerada
-        custo = trepa_colinas(solucao, valores_moedas, n_moedas, valor_alvo, 10000); // Executa o algoritmo de Trepa-Colinas
+        custo = trepa_colinas(solucao, valores_moedas, n_moedas, valor_alvo, 50000); // Executa o algoritmo de Trepa-Colinas
 
         // Exibe a solução e o custo para esta repetição
         printf("\nRepeticao %d: Solucao: ", cntReps);

@@ -20,7 +20,7 @@ double calcula_fit(int a[], double valores_moedas[], int n_moedas, double valor_
             return total_moedas + 99;
         }*/
         // Reduz a penalização proporcional ao valor alvo
-        double penalizacao = fabs(soma - valor_alvo) * 10;
+        double penalizacao = fabs(soma - valor_alvo) * 50;
         return total_moedas + penalizacao;
     }
     // Retorna o número de moedas para soluções válidas
