@@ -6,3 +6,6 @@ void init_rand(void);
 int random_l_h(int min, int max);
 float rand_01(void);
 void print_total(int *sol,double *valor_moedas ,int n_moedas);
+int selecao_torneio(int **populacao, double *fitness, int tam_pop);
+void crossover_um_ponto(int *pai1, int *pai2, int *filho, int n_moedas);
+void mutacao_aleatoria(int *individuo, int n_moedas);

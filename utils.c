@@ -84,3 +84,25 @@ float rand_01()
 {
     return ((float)rand()) / RAND_MAX;
 }
+
+int selecao_torneio(int **populacao, double *fitness, int tam_pop) {
+    int p1 = random_l_h(0, tam_pop - 1);
+    int p2 = random_l_h(0, tam_pop - 1);
+    return (fitness[p1] < fitness[p2]) ? p1 : p2;
+}
+
+void crossover_um_ponto(int *pai1, int *pai2, int *filho, int n_moedas) {
+    int ponto = random_l_h(0, n_moedas - 1);
+    for (int i = 0; i < ponto; i++) {
+        filho[i] = pai1[i];
+    }
+    for (int i = ponto; i < n_moedas; i++) {
+        filho[i] = pai2[i];
+    }
+}
+
+void mutacao_aleatoria(int *individuo, int n_moedas) {
+    int pos = random_l_h(0, n_moedas - 1);
+    individuo[pos] += (rand_01() < 0.5) ? -1 : 1;
+    if (individuo[pos] < 0) individuo[pos] = 0;
+}

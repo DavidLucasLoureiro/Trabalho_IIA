@@ -71,12 +71,30 @@ int main(int argc, char *argv[])
     }
 
     // Exibe o MBF (Mean Best Fitness) e a melhor solução encontrada
-    printf("\n\nMBF: %.2f\n", mbf / n_repeticoes);
+    /*printf("\n\nMBF: %.2f\n", mbf / n_repeticoes);
     printf("\nMelhor solucao encontrada:");
     escreve_sol(melhor_solucao, n_moedas);
-    printf("\nCusto final: %.2f\n", melhor_custo);
+    printf("Custo final: %.2f\n", melhor_custo);
     printf("\nV alvo: %.2f\n",valor_alvo);
-    print_total(melhor_solucao,valores_moedas , n_moedas);
+    print_total(melhor_solucao,valores_moedas , n_moedas);*/
+
+    // Parâmetros do Algoritmo Evolutivo
+    int tam_pop = 50;         // Tamanho da população
+    int geracoes = 100;       // Número de gerações
+    float taxa_mut = 0.2;     // Taxa de mutação (20%)
+    float taxa_cross = 0.7;   // Taxa de crossover (70%)
+
+    printf("\n\n--- Algoritmo Evolutivo ---\n");
+
+    // Executa o Algoritmo Evolutivo
+    melhor_custo = algoritmo_evolutivo(valores_moedas, n_moedas, valor_alvo, tam_pop, geracoes, taxa_mut, taxa_cross);
+
+    // Exibe os resultados do Algoritmo Evolutivo
+    printf("\nMelhor solucao encontrada (Evolutivo):");
+    escreve_sol(melhor_solucao, n_moedas);
+    printf("\nCusto final (Evolutivo): %.2f\n", melhor_custo);
+    printf("\nValor alvo: %.2f\n", valor_alvo);
+    print_total(melhor_solucao, valores_moedas, n_moedas);
 
     // Libera a memória alocada
     free(valores_moedas);
