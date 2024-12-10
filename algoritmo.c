@@ -118,3 +118,66 @@ double algoritmo_evolutivo(double valores_moedas[], int n_moedas, double valor_a
     free(melhor_solucao);
     return melhor_custo_final;
 }
+
+double algoritmo_hibrido(double valores_moedas[], int n_moedas, double valor_alvo, int tam_pop, int geracoes, float taxa_mut, float taxa_cross) {
+    // Inicializar população
+    int **populacao = malloc(tam_pop * sizeof(int *));
+    for (int i = 0; i < tam_pop; i++) {
+        populacao[i] = malloc(n_moedas * sizeof(int));
+        gera_sol_inicial(populacao[i], n_moedas);
+    }
+
+    double *fitness = malloc(tam_pop * sizeof(double));
+    int *melhor_solucao = malloc(n_moedas * sizeof(int));
+    double melhor_custo = 1e9;
+
+    for (int g = 0; g < geracoes; g++) {
+        // Otimização local com Trepa-Colinas
+        for (int i = 0; i < tam_pop; i++) {
+            trepa_colinas(populacao[i], valores_moedas, n_moedas, valor_alvo, 500); // Melhorando cada indivíduo
+            fitness[i] = calcula_fit(populacao[i], valores_moedas, n_moedas, valor_alvo);
+
+            // Atualização da melhor solução
+            if (fitness[i] < melhor_custo) {
+                melhor_custo = fitness[i];
+                substitui(melhor_solucao, populacao[i], n_moedas);
+            }
+        }
+
+        // Nova geração
+        int **nova_populacao = malloc(tam_pop * sizeof(int *));
+        for (int i = 0; i < tam_pop; i++) {
+            nova_populacao[i] = malloc(n_moedas * sizeof(int));
+            int pai1 = selecao_torneio(populacao, fitness, tam_pop);
+            int pai2 = selecao_torneio(populacao, fitness, tam_pop);
+
+            if (rand_01() < taxa_cross) {
+                crossover_um_ponto(populacao[pai1], populacao[pai2], nova_populacao[i], n_moedas);
+            } else {
+                substitui(nova_populacao[i], populacao[pai1], n_moedas);
+            }
+
+            if (rand_01() < taxa_mut) {
+                mutacao_aleatoria(nova_populacao[i], n_moedas);
+            }
+        }
+
+        // Substituir a população antiga
+        for (int i = 0; i < tam_pop; i++) {
+            free(populacao[i]);
+        }
+        free(populacao);
+        populacao = nova_populacao;
+    }
+
+    // Liberação de memória
+    for (int i = 0; i < tam_pop; i++) {
+        free(populacao[i]);
+    }
+    free(populacao);
+    free(fitness);
+
+    double melhor_custo_final = melhor_custo;
+    free(melhor_solucao);
+    return melhor_custo_final;
+}

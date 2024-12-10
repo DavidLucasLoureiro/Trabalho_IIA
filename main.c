@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
     printf("\n\n--- Algoritmo Evolutivo ---\n");
 
     // Executa o Algoritmo Evolutivo
-    melhor_custo = algoritmo_evolutivo(valores_moedas, n_moedas, valor_alvo, tam_pop, geracoes, taxa_mut, taxa_cross);
+    double melhor_custos = algoritmo_hibrido(valores_moedas, n_moedas, valor_alvo, tam_pop, geracoes, taxa_mut, taxa_cross);
 
     // Exibe os resultados do Algoritmo Evolutivo
     printf("\nMelhor solucao encontrada (Evolutivo):");
     escreve_sol(melhor_solucao, n_moedas);
-    printf("\nCusto final (Evolutivo): %.2f\n", melhor_custo);
+    printf("\nCusto final (Evolutivo): %.2f\n", melhor_custos);
     printf("\nValor alvo: %.2f\n", valor_alvo);
     print_total(melhor_solucao, valores_moedas, n_moedas);
 
