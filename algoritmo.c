@@ -50,7 +50,7 @@ double trepa_colinas(int solucao[], double valores_moedas[], int n_moedas, doubl
     return custo; // Retorna o melhor custo encontrado
 }
 
-double algoritmo_evolutivo(double valores_moedas[], int n_moedas, double valor_alvo, int tam_pop, int geracoes, float taxa_mut, float taxa_cross) {
+double algoritmo_evolutivo(int sol[], double valores_moedas[], int n_moedas, double valor_alvo, int tam_pop, int geracoes, float taxa_mut, float taxa_cross) {
     // Inicializar população
     int **populacao = malloc(tam_pop * sizeof(int *));
     for (int i = 0; i < tam_pop; i++) {
@@ -71,6 +71,7 @@ double algoritmo_evolutivo(double valores_moedas[], int n_moedas, double valor_a
         // Avaliação e atualização da melhor solução
         for (int i = 0; i < tam_pop; i++) {
             if (fitness[i] < melhor_custo) {
+                printf("%d", fitness[i]);
                 melhor_custo = fitness[i];
                 substitui(melhor_solucao, populacao[i], n_moedas);
             }
@@ -111,15 +112,21 @@ double algoritmo_evolutivo(double valores_moedas[], int n_moedas, double valor_a
     for (int i = 0; i < tam_pop; i++) {
         free(populacao[i]);
     }
+
     free(populacao);
     free(fitness);
-
+    substitui(sol,melhor_solucao,n_moedas);
+    int teste = 0;
+    for(int i = 0; i<n_moedas;i++){
+        teste += sol[i];
+    }
+    printf("%d",teste);
     double melhor_custo_final = melhor_custo;
     free(melhor_solucao);
     return melhor_custo_final;
 }
 
-double algoritmo_hibrido(double valores_moedas[], int n_moedas, double valor_alvo, int tam_pop, int geracoes, float taxa_mut, float taxa_cross) {
+double algoritmo_hibrido(int sol[], double valores_moedas[], int n_moedas, double valor_alvo, int tam_pop, int geracoes, float taxa_mut, float taxa_cross) {
     // Inicializar população
     int **populacao = malloc(tam_pop * sizeof(int *));
     for (int i = 0; i < tam_pop; i++) {
@@ -176,7 +183,7 @@ double algoritmo_hibrido(double valores_moedas[], int n_moedas, double valor_alv
     }
     free(populacao);
     free(fitness);
-
+    substitui(sol,melhor_solucao,n_moedas);
     double melhor_custo_final = melhor_custo;
     free(melhor_solucao);
     return melhor_custo_final;
