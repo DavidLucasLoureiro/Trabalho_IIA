@@ -2,98 +2,177 @@
 #include <stdlib.h>
 #include <string.h>
 #include "algoritmo.h"
+#include "funcao.h"
 #include "utils.h"
 
 #define DEFAULT_RUNS 10
 
+parameters parametro;
+
 int main(int argc, char *argv[])
 {
-    char nome_fich[100]; // Nome do ficheiro de entrada
+    char nome_fich[100];
+    int runs;
 
-    int n_moedas, n_repeticoes, cntReps; // Número de moedas, número de repetições e contador de repetições
+    // Define o tipo do algoritmo a ser usado
+    // 0 - trepa colinas
+    // 1 - algoritmo evolutivo
+    // 2 - Hibrido, pesquisa local é usada para criar as soluções da população inicial
+    // 3 - Hibrido, pesquisa local é usada para refinar as soluções da última população
+    parametro.type = 0;
 
-    double valor_alvo, custo, melhor_custo, mbf = 0.0; // Valor a alcançar, custo atual, melhor custo e média de custos (MBF)
 
-    double *valores_moedas; // Array que armazena os valores das moedas
+    // Configuração do trepa-colinas
+    parametro.Args_trepa.n_Interacoes = 5000;     // Número de iterações
 
-    int *solucao, *melhor_solucao; // Arrays para a solução atual e a melhor solução encontrada
+    // 1 - usa geravizinho1
+    // 2 - usa geravizinho2
+    parametro.Args_trepa.n_vizinhancas = 2;       // Método de geração de vizinhos
 
-    // Processa argumentos da linha de comando ou solicita o nome do ficheiro
-    if (argc >= 2) {
-        strcpy(nome_fich, argv[1]); // Copia o nome do ficheiro fornecido como argumento
-        n_repeticoes = (argc == 3) ? atoi(argv[2]) : DEFAULT_RUNS;
+    // 0 - não permite custo igual
+    // 1 - permite custo igual
+    parametro.Args_trepa.custoIgual = 0;        // Permite custo igual
+
+
+    // Configuração do algoritmo evolutivo
+    parametro.Args_evolucao.pop = 100;            // Tamanho da população
+
+    // 1 - Recombinação com um ponto de corte
+    // 2 - Recombinação com dois pontos de corte
+    parametro.Args_evolucao.recombinacao = 1;         // Método de recombinação
+    parametro.Args_evolucao.probRecombinacao = 0.5;   // Probabilidade de recombinação
+
+    // 1 - Mutaçao binária
+    // 2 - Mutaçao por troca
+    parametro.Args_evolucao.mutacao = 1;         // Método de mutação
+    parametro.Args_evolucao.probMutacao = 0.05;  // Probabilidade de mutação
+
+    // 1 - Seleção por torneio
+    // 2 - Seleção por torneio generalizado
+    parametro.Args_evolucao.selecao = 2;
+
+    // 1 - Penalização
+    // 2 - Reparação
+    parametro.Args_evolucao.tipo = 2;        // Tipo (reparação ou penalização)
+
+    // Processamento dos argumentos da linha de comando
+    if (argc == 3) {
+        runs = atoi(argv[2]);
+        strcpy(nome_fich, argv[1]);
+    } else if (argc == 2) {
+        runs = DEFAULT_RUNS;
+        strcpy(nome_fich, argv[1]);
     } else {
+        runs = DEFAULT_RUNS;
         printf("Nome do Ficheiro: ");
-        gets(nome_fich); // Lê o nome do ficheiro via entrada padrão
-        n_repeticoes = DEFAULT_RUNS; // Usa o número padrão de repetições
+        gets(nome_fich);
     }
 
-    if (n_repeticoes <= 0) // Valida o número de repetições
+    if (runs <= 0)
         return 0;
 
-    init_rand(); // Inicializa o gerador de números aleatórios
+    if (parametro.type >= 1) {
+        struct info EA_param;
+        pchrom pop = NULL, parents = NULL;
+        chrom best_run, best_ever;
+        int gen_actual, r, i, inv;
+        float mbf = 0.0;
 
-    // Lê os dados do ficheiro: número de moedas, valor alvo, e valores das moedas
-    valores_moedas = ler_dados(nome_fich, &n_moedas, &valor_alvo);
-    if (!valores_moedas) {
-        printf("Erro ao carregar os dados do ficheiro\n");
-        return 1;
-    }
+        // Inicializa os dados do problema
+        init_rand();
+        EA_param = ler_dados(nome_fich, NULL);
+        EA_param.parametro = &parametro;
+        EA_param.popsize = parametro.Args_evolucao.pop;
+        EA_param.pm = parametro.Args_evolucao.probMutacao;
+        EA_param.pr = parametro.Args_evolucao.probRecombinacao;
+        EA_param.tamTor = 50;
 
-    // Aloca memória para os vetores de solução
-    solucao = malloc(sizeof(int) * n_moedas); // Solução atual
-    melhor_solucao = malloc(sizeof(int) * n_moedas); // Melhor solução encontrada
-    if (solucao == NULL || melhor_solucao == NULL) {
-        printf("Erro na alocacao de memoria\n");
-        free(valores_moedas);
-        return 1;
-    }
+        for (r = 0; r < runs; r++) {
+            printf("\nRepeticao %d:\n", r + 1);
+            pop = init_populacao(EA_param);
+            evolutivo(pop, EA_param);
+            gen_actual = 1;
+            best_run = pop[0];
+            best_run = get_best(pop, EA_param, best_run);
+            parents = malloc(sizeof(chrom) * EA_param.popsize);
+            if (parents == NULL) {
+                printf("Erro na alocacao de memoria\n");
+                exit(1);
+            }
 
-    // Inicializa o melhor custo com um valor muito alto
-    melhor_custo = 1e9;
+            while (gen_actual <= EA_param.n_Geracoes) {
+                if (parametro.Args_evolucao.selecao == 1)
+                    torneio(pop, EA_param, parents);
+                else
+                    torneio_geral(pop, EA_param, parents);
+                operadores_geneticos(parents, EA_param, pop);
+                evolutivo(pop, EA_param);
+                best_run = get_best(pop, EA_param, best_run);
+                gen_actual++;
+            }
 
-    // Parâmetros do Algoritmo Evolutivo
-    int tam_pop = 50;         // Tamanho da população
-    int geracoes = 100;       // Número de gerações
-    float taxa_mut = 0.2;     // Taxa de mutação (20%)
-    float taxa_cross = 0.7;   // Taxa de crossover (70%)
+            if (parametro.type == 3)
+                trepa_colinas_hibrido(best_run.p, EA_param, 100); // Refina a melhor solução com trepa-colinas
 
-    // Executa o algoritmo para o número de repetições definido
-    for (cntReps = 0; cntReps < 20; cntReps++) {
-        gera_sol_inicial(solucao, n_moedas); // Gera uma solução inicial aleatória ou zerada
-        //custo = trepa_colinas(solucao, valores_moedas, n_moedas, valor_alvo, 50000); // Executa o algoritmo de Trepa-Colinas
-        custo = algoritmo_evolutivo(solucao, valores_moedas, n_moedas, valor_alvo, tam_pop, geracoes, taxa_mut, taxa_cross); //Executa o algoritmo de Evolutivo
-        //custo = algoritmo_hibrido(solucao, valores_moedas, n_moedas, valor_alvo, tam_pop, geracoes, taxa_mut, taxa_cross);  //Executa o algoritmo de Algoritmo-Hibrido
+            for (inv = 0, i = 0; i < EA_param.popsize; i++)
+                if (pop[i].valido == 0)
+                    inv++;
 
-        // Exibe a solução e o custo para esta repetição
-        printf("\nRepeticao %d: Solucao: ", cntReps);
-        escreve_sol(solucao, n_moedas);
-        printf("\n Custo final: %.2f\n", custo);
-        print_total(melhor_solucao,valores_moedas , n_moedas);
+            write_best(best_run, EA_param);
+            printf("\nPercentagem Invalidos: %f\n", 100 * (float)inv / EA_param.popsize);
+            mbf += best_run.fitness;
+            if (r == 0 || best_run.fitness < best_ever.fitness)
+                best_ever = best_run;
 
-        // Atualiza o MBF e verifica se a solução é a melhor encontrada até o momento
-        mbf += custo;
-        if (cntReps == 0 || custo < melhor_custo) {
-            melhor_custo = custo;
-            substitui(melhor_solucao, solucao, n_moedas); // Substitui a melhor solução pela atual
+            free(parents);
+            free(pop);
         }
+
+        printf("\n\nMBF: %f\n", mbf / runs);
+        printf("\nMelhor solucao encontrada\n");
+        write_best(best_ever, EA_param);
+
+    } else {
+        int *moedas;
+        int V;
+        int n;
+
+        ler_instancia(nome_fich, &n, &V, &moedas);
+
+        int num_iter = parametro.Args_trepa.n_Interacoes;
+        int *sol = malloc(sizeof(int) * n);
+        int *best = malloc(sizeof(int) * n);
+        int custo, melhor_custo;
+        float mbf = 0.0;
+
+        if (sol == NULL || best == NULL) {
+            printf("Erro na alocacao de memoria\n");
+            exit(1);
+        }
+
+        for (int k = 0; k < runs; k++) {
+            gera_sol_inicial(sol, n);
+            custo = trepa_colinas(sol, moedas, n, V, num_iter, parametro);
+
+            printf("\nRepeticao %d:", k);
+            escreve_solucao(sol, moedas, n);
+            printf("Custo final: %2d\n", custo);
+            mbf += custo;
+
+            if (k == 0 || melhor_custo > custo) {
+                melhor_custo = custo;
+                substitui(best, sol, n);
+            }
+        }
+
+        printf("\n\nMBF: %f\n", mbf / runs);
+        printf("\nMelhor solucao encontrada\n");
+        for (int i = 0; i < n; i++) {
+            printf("Moeda %d: %d\n", moedas[i], best[i]);
+        }
+        printf("Custo final: %d\n", melhor_custo);
+        free(sol);
+        free(best);
     }
-
-    // Exibe os resultados
-    printf("\n\nMBF: %.2f\n", mbf / n_repeticoes);
-    //printf("\nMelhor solucao encontrada (Pesquisa Local):");
-    printf("\nMelhor solucao encontrada (Evolutivo):");
-    //printf("\nMelhor solucao encontrada (Hibrido):");
-    escreve_sol(melhor_solucao, n_moedas);
-    //printf("\nCusto final (Pesquisa Local): %.2f\n", melhor_custo);
-    printf("\nCusto final (Evolutivo): %.2f\n", melhor_custo);
-    //printf("\nCusto final (Hibrido): %.2f\n", melhor_custo);
-    printf("\nValor alvo: %.2f\n", valor_alvo);
-    print_total(melhor_solucao, valores_moedas, n_moedas);
-
-    // Libera a memória alocada
-    free(valores_moedas);
-    free(solucao);
-    free(melhor_solucao);
     return 0;
 }

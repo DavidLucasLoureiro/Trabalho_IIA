@@ -1,11 +1,27 @@
-double *ler_dados(const char *filename, int *n_moedas, double *valor_alvo);
-void gera_sol_inicial(int *sol, int v);
-void escreve_sol(int *sol, int vert);
-void substitui(int a[], int b[], int n);
-void init_rand(void);
+struct info ler_dados(char *filename, int mat[][2]);
+
+void init_rand();
+
 int random_l_h(int min, int max);
-float rand_01(void);
-void print_total(int *sol,double *valor_moedas ,int n_moedas);
-int selecao_torneio(int **populacao, double *fitness, int tam_pop);
-void crossover_um_ponto(int *pai1, int *pai2, int *filho, int n_moedas);
-void mutacao_aleatoria(int *individuo, int n_moedas);
+
+float rand_01();
+
+int flip();
+
+void gera_sol_inicial(int *solucao, int n_moedas);
+
+void escreve_solucao(int *solucao, int *valores_moedas, int n_moedas);
+
+void print_total(int *solucao,double *valor_moedas ,int n_moedas);
+
+void substitui(int solucao[], int nova_solucao[], int n_moedas);
+
+pchrom init_populacao(struct info d);
+
+chrom get_best(pchrom pop, struct info d, chrom best);
+
+void write_best(chrom x, struct info d);
+
+void ler_instancia(char *nome, int *n, int *v, int **moedas);
+
+
