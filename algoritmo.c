@@ -5,142 +5,154 @@
 #include "utils.h"
 #include "funcao.h"
 
-void gera_vizinho(int solucao[], int nova_solucao[], int n_moedas) //solucao atual, nova solucao vizinha gerada, numero de moedas
+// Gera um vizinho à distância (altera a quantidade de uma moeda)
+void gera_vizinho(int solucao[], int nova_solucao[], int n_moedas) // solucao atual, nova solucao vizinha gerada, numero de moedas
 {
+    // Copia a solução atual para a nova solução
     for (int i = 0; i < n_moedas; i++)
-        nova_solucao[i] = solucao[i]; // Copia a solução atual para a nova solução
+        nova_solucao[i] = solucao[i];
 
-    int p = random_l_h(0, n_moedas - 1); // Índice da moeda selecionada aleatoriamente
+    // Seleciona aleatoriamente um índice de moeda
+    int p = random_l_h(0, n_moedas - 1);
 
-    nova_solucao[p] = solucao[p] + random_l_h(-1,1); // Altera a quantidade da moeda na posição encontrada de forma controlada
+    // Altera a quantidade da moeda no índice selecionado
+    nova_solucao[p] = solucao[p] + random_l_h(-1,1);
 
-    if (nova_solucao[p] < 0) // Garante que a quantidade de moedas não seja negativa
+    // Garante que a quantidade de moedas não seja negativa
+    if (nova_solucao[p] < 0)
         nova_solucao[p] = 0;
 }
 
-// Gera um vizinho à distância 2 (altera a quantidade de duas moedas)
-// Parâmetros de entrada: Solução atual, Solução vizinha, Número de moedas
+// Gera um vizinho à distância (altera a quantidade de duas moedas)
 void gera_vizinho2(int solucao[], int nova_solucao[], int n_moedas)
 {
     int p1, p2;
 
-    // Copia a solução atual para a solução vizinha
-    for(int i = 0; i < n_moedas; i++)
+    // Copia a solução atual para a nova solução
+    for (int i = 0; i < n_moedas; i++)
         nova_solucao[i] = solucao[i];
 
-    // Encontra aleatoriamente a posição de uma moeda
+    // Seleciona aleatoriamente a posição de uma moeda
     p1 = random_l_h(0, n_moedas - 1);
 
-    // Altera a quantidade da moeda na posição encontrada de forma controlada
+    // Altera a quantidade da moeda na posição encontrada
     nova_solucao[p1] = solucao[p1] + random_l_h(-1, 1);
 
-    if (nova_solucao[p1] < 0) // Garante que a quantidade de moedas não seja negativa
+    // Garante que a quantidade de moedas não seja negativa
+    if (nova_solucao[p1] < 0)
         nova_solucao[p1] = 0;
 
-    do // Encontra aleatoriamente a posição de outra moeda, diferente da primeira
+    // Seleciona aleatoriamente a posição de outra moeda, diferente da primeira
+    do
         p2 = random_l_h(0, n_moedas - 1);
     while(p2 == p1);
 
-    // Altera a quantidade da moeda na posição encontrada de forma controlada
+    // Altera a quantidade da moeda na nova posição selecionada
     nova_solucao[p2] = solucao[p2] + random_l_h(-1, 1);
-    if (nova_solucao[p2] < 0) // Garante que a quantidade de moedas não seja negativa
+
+    // Garante que a quantidade de moedas não seja negativa
+    if (nova_solucao[p2] < 0)
         nova_solucao[p2] = 0;
 }
 
-// Parâmetros de entrada: Solução, Valores das moedas, Número de moedas, Valor alvo, Número de iterações
+//Função trepa colinas
 int trepa_colinas(int solucao[], int valores_moedas[], int n_moedas, int valor_alvo, int num_iter, parameters parametro)
 {
-    int *nova_solucao = malloc(sizeof(int) * n_moedas); // Aloca espaço em memória para guardar a nova solução
+    // Aloca memória para armazenar a nova solução gerada
+    int *nova_solucao = malloc(sizeof(int) * n_moedas);
 
     if (nova_solucao == NULL) {
         printf("Erro na alocacao de memoria\n");
         exit(1);
     }
 
-    int custo = calcula_fit(solucao, valores_moedas, n_moedas, valor_alvo); // Calcula o custo inicial
+    // Calcula o custo inicial da solução
+    int custo = calcula_fit(solucao, valores_moedas, n_moedas, valor_alvo);
 
     for (int i = 0; i < num_iter; i++) {
 
+        // Gera vizinho baseado no número de vizinhanças configurado
         if(parametro.Args_trepa.n_vizinhancas == 1)
             gera_vizinho(solucao, nova_solucao, n_moedas);
         else
             gera_vizinho2(solucao, nova_solucao, n_moedas);
 
-        gera_vizinho2(solucao, nova_solucao, n_moedas);
+        // Calcula o custo da nova solução vizinha
         int custo_vizinho = calcula_fit(nova_solucao, valores_moedas, n_moedas, valor_alvo);
 
-        // Fica com a solução vizinha se o custo diminuir
+        // Verifica se deve aceitar a nova solução
         if(parametro.Args_trepa.custoIgual == 0) {
             if (custo_vizinho < custo) {
                 substitui(solucao, nova_solucao, n_moedas);
                 custo = custo_vizinho;
             }
-            else {
-                if (custo_vizinho <= custo){
-                    substitui(solucao, nova_solucao, n_moedas);
-                    custo = custo_vizinho;
-                }
+        } else {
+            if (custo_vizinho <= custo) {
+                substitui(solucao, nova_solucao, n_moedas);
+                custo = custo_vizinho;
             }
         }
     }
 
-    free(nova_solucao); // Libera a memória alocada para a a nova solução
+    // Libera a memória alocada para a nova solução
+    free(nova_solucao);
     return custo; // Retorna o melhor custo encontrado
 }
 
-// Preenche uma estrutura com os progenitores da pr�xima gera��o, de acordo com o resultados do torneio binario (tamanho de torneio: 2)
-// Par�metros de entrada: popula��o actual (pop), estrutura com par�metros (d) e popula��o de pais a encher
+// Função de torneio simples para seleção
 void torneio(pchrom pop, struct info d, pchrom parents)
 {
-    int i, x1, x2;
+    int x1, x2;
 
-    // Realiza popsize torneios
-    for (i = 0; i < d.popsize; i++)
+    for (int i = 0; i < d.popsize; i++)
     {
         x1 = random_l_h(0, d.popsize - 1);
         do
             x2 = random_l_h(0, d.popsize - 1);
         while (x1 == x2);
-        if (pop[x1].fitness < pop[x2].fitness) // Problema de minimização
+
+        if (pop[x1].fitness < pop[x2].fitness)
             parents[i] = pop[x1];
         else
             parents[i] = pop[x2];
     }
 }
 
-// Preenche uma estrutura com os progenitores da pr�xima gera��o, de acordo com o resultados do torneio binario (tamanho de torneio: 2)
-// Par�metros de entrada: popula��o actual (pop), estrutura com par�metros (d) e popula��o de pais a encher
+// Função de torneio geral para seleção
 void torneio_geral(pchrom pop, struct info d, pchrom parents)
 {
-    int i, j, k, sair, best, *pos;
+    int sair, best, *pos;
 
+    // Aloca memória para armazenar as posições do torneio
     pos = malloc(d.tamTor * sizeof(int));
-    // Realiza popsize torneios
-    for (i = 0; i < d.popsize; i++)
+
+    for (int i = 0; i < d.popsize; i++)
     {
         best = -1;
-        // Seleciona tsize soluções diferentes para entrarem em torneio de seleção
-        for (j = 0; j < d.tamTor; j++)
+
+        for (int j = 0; j < d.tamTor; j++)
         {
-            do
-            {
+            do {
                 pos[j] = random_l_h(0, d.popsize - 1);
-                // Verifica se a nova posição escolhida é igual a alguma das outras posições escolhidas
                 sair = 0;
-                for (k = 0; k < j; k++)
+
+                // Verifica se a posição já foi selecionada anteriormente
+                for (int k = 0; k < j; k++)
                 {
                     if (pos[k] == pos[j])
                         sair = 1;
                 }
             } while (sair);
-            // Guarda a posição da melhor solução válida de todas as que entraram em torneio
-            if (best == -1 || (pop[pos[j]].valido && pop[pos[j]].fitness > pop[pos[best]].fitness)) // Problema de maximização
+
+            // Guarda a melhor solução válida entre as selecionadas
+            if (best == -1 || (pop[pos[j]].valido && pop[pos[j]].fitness > pop[pos[best]].fitness))
                 best = j;
         }
-        // Se não encontrou nenhum indivíduo válido, seleciona o melhor inválido
+
+        // Se não encontrar nenhum indivíduo válido, seleciona o melhor inválido
         if (best == -1)
         {
-            for (j = 0; j < d.tamTor; j++)
+            for (int j = 0; j < d.tamTor; j++)
             {
                 if (best == -1 || pop[pos[j]].fitness > pop[pos[best]].fitness)
                     best = j;
@@ -151,41 +163,40 @@ void torneio_geral(pchrom pop, struct info d, pchrom parents)
     free(pos);
 }
 
-// Operadores geneticos a usar na gera��o dos filhos
-// Par�metros de entrada: estrutura com os pais (parents), estrutura com par�metros (d), estrutura que guardar� os descendentes (offspring)
+// Operadores genéticos para geração dos filhos
 void operadores_geneticos(pchrom parents, struct info d, pchrom offspring)
 {
+    // Aplica recombinação
     if(d.parametro->Args_evolucao.recombinacao == 1)
-        // Recombina��o com um ponto de corte
         crossover(parents, d, offspring);
     else
-        // Recombina��o com dois pontos de corte
         recombinacao_dois_pontos_corte(parents, d, offspring);
+
+    // Aplica mutação
     if(d.parametro->Args_evolucao.mutacao == 1)
-        // Muta��o bin�ria
         mutacao(offspring, d);
     else
-        // Muta��o por troca
         mutacao_troca(offspring, d);
 }
 
-// Preenche o vector descendentes com o resultado das opera��es de recombina��o
-// Par�metros de entrada: estrutura com os pais (parents), estrutura com par�metros (d), estrutura que guardar� os descendentes (offspring)
+// Recombinação com um ponto de corte
 void crossover(pchrom parents, struct info d, pchrom offspring)
 {
-    int i, j, point;
+    int ponto;
 
-    for (i = 0; i < d.popsize; i += 2)
+    for (int i = 0; i < d.popsize; i += 2)
     {
         if (rand_01() < d.pr)
         {
-            point = random_l_h(0, d.n_Moedas - 1);
-            for (j = 0; j < point; j++)
+            ponto = random_l_h(0, d.n_Moedas - 1);
+
+            // Recombina genes antes e após o ponto de corte
+            for (int j = 0; j < ponto; j++)
             {
                 offspring[i].p[j] = parents[i].p[j];
                 offspring[i + 1].p[j] = parents[i + 1].p[j];
             }
-            for (j = point; j < d.n_Moedas; j++)
+            for (int j = ponto; j < d.n_Moedas; j++)
             {
                 offspring[i].p[j] = parents[i + 1].p[j];
                 offspring[i + 1].p[j] = parents[i].p[j];
@@ -193,76 +204,78 @@ void crossover(pchrom parents, struct info d, pchrom offspring)
         }
         else
         {
+            // Copia diretamente os pais para os descendentes
             offspring[i] = parents[i];
             offspring[i + 1] = parents[i + 1];
         }
     }
 }
 
-// Preenche o vector descendentes com o resultado da opera��o de recombina��o com dois pontos de corte
-// Par�metros de entrada: estrutura com os pais (parents), estrutura com par�metros (d), estrutura que guardar� os descendentes (offspring)
+// Recombinação com dois pontos de corte
 void recombinacao_dois_pontos_corte(pchrom parents, struct info d, pchrom offspring)
 {
-    int i, j, point1, point2;
+    int ponto1, ponto2;
 
-    for (i=0; i<d.popsize; i+=2)
+    for (int i = 0; i < d.popsize; i += 2)
     {
         if (rand_01() < d.pr)
         {
-            point1 = random_l_h(0, d.n_Moedas-2);
-            point2 = random_l_h(point1+1, d.n_Moedas-1);
-            for (j=0; j<point1; j++)
+            ponto1 = random_l_h(0, d.n_Moedas - 2);
+            ponto2 = random_l_h(ponto1 + 1, d.n_Moedas - 1);
+
+            // Recombina genes nas três regiões
+            for (int j = 0; j < ponto1; j++)
             {
                 offspring[i].p[j] = parents[i].p[j];
-                offspring[i+1].p[j] = parents[i+1].p[j];
+                offspring[i + 1].p[j] = parents[i + 1].p[j];
             }
-            for (j=point1; j<point2; j++)
+            for (int j = ponto1; j < ponto2; j++)
             {
-                offspring[i].p[j]= parents[i+1].p[j];
-                offspring[i+1].p[j] = parents[i].p[j];
+                offspring[i].p[j] = parents[i + 1].p[j];
+                offspring[i + 1].p[j] = parents[i].p[j];
             }
-            for (j=point2; j<d.n_Moedas; j++)
+            for (int j = ponto2; j < d.n_Moedas; j++)
             {
                 offspring[i].p[j] = parents[i].p[j];
-                offspring[i+1].p[j] = parents[i+1].p[j];
+                offspring[i + 1].p[j] = parents[i + 1].p[j];
             }
         }
         else
         {
+            // Copia diretamente os pais para os descendentes
             offspring[i] = parents[i];
-            offspring[i+1] = parents[i+1];
+            offspring[i + 1] = parents[i + 1];
         }
     }
 }
 
-// Mutação por substituição de um gene por outro valor aleatório.
-// Par�metros de entrada: estrutura com os descendentes (offspring) e estrutura com par�metros (d)
+// Mutação binária
 void mutacao(pchrom offspring, struct info d)
 {
-    int i, j;
-
-    for (i = 0; i < d.popsize; i++)
+    for (int i = 0; i < d.popsize; i++)
     {
-        for (j = 0; j < d.n_Moedas; j++)
+        for (int j = 0; j < d.n_Moedas; j++)
         {
             if (rand_01() < d.pm)
             {
-                offspring[i].p[j] = random_l_h(0, (int)(d.valor_alvo / d.moedas[j])); // Gera um número aleatório de moedas
+                // Gera um número aleatório de moedas
+                offspring[i].p[j] = random_l_h(0, (int)(d.valor_alvo / d.moedas[j]));
             }
         }
     }
 }
 
-// Muta��o por troca : troca a quantidade de duas moedas aleatoriamente escolhidas
-// Par�metros de entrada: estrutura com os descendentes (offspring) e estrutura com par�metros (d)
+// Mutação por troca
 void mutacao_troca(pchrom offspring, struct info d)
 {
-    int i, pos1, pos2, aux;
-    for (i = 0; i < d.popsize; i++)
+    int pos1, pos2, aux;
+    for (int i = 0; i < d.popsize; i++)
     {
         if (rand_01() < d.pm)
         {
             int attempts = 0;
+
+            // Encontra uma posição para troca
             do
             {
                 pos1 = random_l_h(0, d.n_Moedas - 1);
@@ -276,6 +289,7 @@ void mutacao_troca(pchrom offspring, struct info d)
                 attempts++;
             } while (offspring[i].p[pos2] == 0 && attempts < d.n_Moedas);
 
+            // Realiza a troca de posições
             if (offspring[i].p[pos1] != 1 && offspring[i].p[pos2] != 0)
             {
                 aux = offspring[i].p[pos1];
@@ -286,10 +300,12 @@ void mutacao_troca(pchrom offspring, struct info d)
     }
 }
 
+// Subida de colinas híbrida
 int trepa_colinas_hibrido(int solucao[], struct info d, int num_iter)
 {
-    int *nova_solucao, custo, custo_viz, i, valido;
+    int *nova_solucao, custo, custo_viz, valido;
 
+    // Aloca memória para a nova solução
     nova_solucao = malloc(sizeof(int) * d.n_Moedas);
     if (nova_solucao == NULL)
     {
@@ -297,21 +313,31 @@ int trepa_colinas_hibrido(int solucao[], struct info d, int num_iter)
         exit(1);
     }
 
+    // Calcula o custo inicial usando uma função de reparação
     custo = evolutivo_reparado(solucao, d, &valido);
-    for(i = 0; i < num_iter; i++)
+
+    for (int i = 0; i < num_iter; i++)
     {
-        if(d.parametro->Args_trepa.n_vizinhancas == 1)
+        // Gera vizinho com base no número de vizinhanças configurado
+        if (d.parametro->Args_trepa.n_vizinhancas == 1)
             gera_vizinho(solucao, nova_solucao, d.n_Moedas);
         else
             gera_vizinho2(solucao, nova_solucao, d.n_Moedas);
 
+        // Calcula o custo da nova solução vizinha
         custo_viz = evolutivo_reparado(nova_solucao, d, &valido);
-        if(d.parametro->Args_trepa.custoIgual == 0) {
-            if (custo_viz < custo) {
+
+        // Verifica se deve aceitar a nova solução
+        if (d.parametro->Args_trepa.custoIgual == 0)
+        {
+            if (custo_viz < custo)
+            {
                 substitui(solucao, nova_solucao, d.n_Moedas);
                 custo = custo_viz;
             }
-        } else {
+        }
+        else
+        {
             if (custo_viz <= custo)
             {
                 substitui(solucao, nova_solucao, d.n_Moedas);
@@ -320,6 +346,7 @@ int trepa_colinas_hibrido(int solucao[], struct info d, int num_iter)
         }
     }
 
+    // Libera a memória alocada
     free(nova_solucao);
-    return custo;
+    return custo; // Retorna o melhor custo encontrado
 }

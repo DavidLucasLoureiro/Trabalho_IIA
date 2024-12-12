@@ -12,7 +12,7 @@ parameters parametro;
 int main(int argc, char *argv[])
 {
     char nome_fich[100];
-    int runs;
+    int repeticoes;
 
     // Define o tipo do algoritmo a ser usado
     // 0 - trepa colinas
@@ -23,29 +23,29 @@ int main(int argc, char *argv[])
 
 
     // Configuração do trepa-colinas
-    parametro.Args_trepa.n_Interacoes = 5000;     // Número de iterações
+    parametro.Args_trepa.n_Interacoes = 5000;           // Número de iterações
 
     // 1 - usa geravizinho1
     // 2 - usa geravizinho2
-    parametro.Args_trepa.n_vizinhancas = 2;       // Método de geração de vizinhos
+    parametro.Args_trepa.n_vizinhancas = 2;             // Método de geração de vizinhos
 
     // 0 - não permite custo igual
     // 1 - permite custo igual
-    parametro.Args_trepa.custoIgual = 0;        // Permite custo igual
+    parametro.Args_trepa.custoIgual = 0;                // Permite custo igual
 
 
     // Configuração do algoritmo evolutivo
-    parametro.Args_evolucao.pop = 100;            // Tamanho da população
+    parametro.Args_evolucao.pop = 100;                  // Tamanho da população
 
     // 1 - Recombinação com um ponto de corte
     // 2 - Recombinação com dois pontos de corte
-    parametro.Args_evolucao.recombinacao = 1;         // Método de recombinação
-    parametro.Args_evolucao.probRecombinacao = 0.5;   // Probabilidade de recombinação
+    parametro.Args_evolucao.recombinacao = 1;           // Método de recombinação
+    parametro.Args_evolucao.probRecombinacao = 0.5;     // Probabilidade de recombinação
 
     // 1 - Mutaçao binária
     // 2 - Mutaçao por troca
-    parametro.Args_evolucao.mutacao = 1;         // Método de mutação
-    parametro.Args_evolucao.probMutacao = 0.05;  // Probabilidade de mutação
+    parametro.Args_evolucao.mutacao = 1;                // Método de mutação
+    parametro.Args_evolucao.probMutacao = 0.05;         // Probabilidade de mutação
 
     // 1 - Seleção por torneio
     // 2 - Seleção por torneio generalizado
@@ -53,22 +53,22 @@ int main(int argc, char *argv[])
 
     // 1 - Penalização
     // 2 - Reparação
-    parametro.Args_evolucao.tipo = 2;        // Tipo (reparação ou penalização)
+    parametro.Args_evolucao.tipo = 2;                   // Tipo (reparação ou penalização)
 
     // Processamento dos argumentos da linha de comando
     if (argc == 3) {
-        runs = atoi(argv[2]);
+        repeticoes = atoi(argv[2]);
         strcpy(nome_fich, argv[1]);
     } else if (argc == 2) {
-        runs = DEFAULT_RUNS;
+        repeticoes = DEFAULT_RUNS;
         strcpy(nome_fich, argv[1]);
     } else {
-        runs = DEFAULT_RUNS;
+        repeticoes = DEFAULT_RUNS;
         printf("Nome do Ficheiro: ");
         gets(nome_fich);
     }
 
-    if (runs <= 0)
+    if (repeticoes <= 0)
         return 0;
 
     if (parametro.type >= 1) {
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         EA_param.pr = parametro.Args_evolucao.probRecombinacao;
         EA_param.tamTor = 50;
 
-        for (r = 0; r < runs; r++) {
+        for (r = 0; r < repeticoes; r++) {
             printf("\nRepeticao %d:\n", r + 1);
             pop = init_populacao(EA_param);
             evolutivo(pop, EA_param);
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
             }
 
             if (parametro.type == 3)
-                trepa_colinas_hibrido(best_run.p, EA_param, 100); // Refina a melhor solução com trepa-colinas
+                trepa_colinas_hibrido(best_run.p, EA_param, 100);
 
             for (inv = 0, i = 0; i < EA_param.popsize; i++)
                 if (pop[i].valido == 0)
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
             free(pop);
         }
 
-        printf("\n\nMBF: %f\n", mbf / runs);
+        printf("\n\nMBF: %f\n", mbf / repeticoes);
         printf("\nMelhor solucao encontrada\n");
         write_best(best_ever, EA_param);
 
@@ -150,13 +150,13 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        for (int k = 0; k < runs; k++) {
+        for (int k = 0; k < repeticoes; k++) {
             gera_sol_inicial(sol, n);
             custo = trepa_colinas(sol, moedas, n, V, num_iter, parametro);
 
-            printf("\nRepeticao %d:", k);
+            printf("\nRepeticao %d: ", k);
             escreve_solucao(sol, moedas, n);
-            printf("Custo final: %2d\n", custo);
+            printf("\tCusto final: %2d\n", custo);
             mbf += custo;
 
             if (k == 0 || melhor_custo > custo) {
@@ -165,8 +165,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        printf("\n\nMBF: %f\n", mbf / runs);
-        printf("\nMelhor solucao encontrada\n");
+        printf("\n\nMBF: %f\n", mbf / repeticoes);
+        printf("\nMelhor solucao encontrada:\n");
         for (int i = 0; i < n; i++) {
             printf("Moeda %d: %d\n", moedas[i], best[i]);
         }

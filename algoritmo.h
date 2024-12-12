@@ -1,23 +1,23 @@
 #ifndef ALGORITMO_H
 #define ALGORITMO_H
-#define MAX_OBJ 1000		// Numero maximo de objectos
+#define MAX_OBJ 1000		// Numero maximo de objetos
 
 
 
 typedef struct {
-    int n_Interacoes;		// Número de iterações
-    int n_vizinhancas;	// Número de vizinhanças
-    int custoIgual;		// Permitir custo igual
+    int n_Interacoes;		    // Número de iterações
+    int n_vizinhancas;	        // Número de vizinhanças
+    int custoIgual;		        // Permitir custo igual
 } ARGS_trepa;
 
 typedef struct {
-    int pop;		    // Tamanho da população
-    int recombinacao;	// Metodo de recombinacao
-    float probRecombinacao;	// Probabilidade de recombinação
-    int mutacao;        // Metodo de mutação
-    float probMutacao;		// Probabilidade de mutação
-    int selecao;        // Metodo de seleção
-    int tipo;		    // Tipo (reparação ou penalização)
+    int pop;		            // Tamanho da população
+    int recombinacao;	        // Metodo de recombinacao
+    float probRecombinacao;	    // Probabilidade de recombinação
+    int mutacao;                // Metodo de mutação
+    float probMutacao;		    // Probabilidade de mutação
+    int selecao;                // Metodo de seleção
+    int tipo;		            // Tipo (reparação ou penalização)
 
 } ARGS_evolucao;
 
@@ -35,15 +35,15 @@ typedef struct {
 // EStrutura para armazenar parametros
 struct info
 {
-    int popsize;       // Tamanho da população
-    float pm;          // Probabilidade de mutação
-    float pr;          // Probabilidade de recombinação
-    int tamTor;         // Tamanho do torneio para seleção do pai da próxima geração
-    float ro;          // Constante para avaliação com penalização
-    int n_Moedas;      // Número de moedas
-    int n_Geracoes;// Número de gerações
+    int popsize;                // Tamanho da população
+    float pm;                   // Probabilidade de mutação
+    float pr;                   // Probabilidade de recombinação
+    int tamTor;                 // Tamanho do torneio para seleção do pai da próxima geração
+    float ro;                   // Constante para avaliação com penalização
+    int n_Moedas;               // Número de moedas
+    int n_Geracoes;             // Número de gerações
     int valor_alvo;             // Valor desejado
-    int moedas[MAX_OBJ]; // Valores das moedas
+    int moedas[MAX_OBJ];        // Valores das moedas
     parameters *parametro;
 };
 

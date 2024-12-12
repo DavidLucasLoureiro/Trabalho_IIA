@@ -4,99 +4,120 @@
 #include "algoritmo.h"
 #include "utils.h"
 
-// Lê os dados do ficheiro no formato especificado
-// O ficheiro contém o número de moedas, o valor alvo, os valores das moedas
+// Função que lê os dados de entrada de um ficheiro
 struct info ler_dados(char *filename, int mat[][2])
 {
-    struct info x;
-    FILE *f;
-    int i;
-    float V_aux;
-    float moedas_aux[MAX_OBJ];
+    struct info x; // Estrutura que armazenará os dados do problema
+    FILE *f; // Ponteiro para o ficheiro
+    int i; // Variável de controlo para o ciclo
+    float V_aux; // Variável auxiliar para armazenar o valor alvo
+    float moedas_aux[MAX_OBJ]; // Array auxiliar para armazenar os valores das moedas
 
+    // Abre o ficheiro para leitura
     f = fopen(filename, "rt");
-    if (!f)
+    if (!f) // Verifica se o ficheiro foi aberto com sucesso
     {
-        printf("Ficheiro nao encontrado\n");
-        exit(1);
+        printf("Ficheiro não encontrado\n");
+        exit(1); // Encerra o programa em caso de erro
     }
 
-    // Leitura dos parâmetros do problema
+    // Lê o número de moedas e o valor alvo do ficheiro
     fscanf(f, "%d %f", &x.n_Moedas, &V_aux);
-    x.valor_alvo = (int)(V_aux * 100); // Multiplica por 100 e converte para int
+    x.valor_alvo = (int)(V_aux * 100); // Converte o valor para cêntimos e armazena como inteiro
 
+    // Lê os valores de cada moeda e converte-os para cêntimos
     for (i = 0; i < x.n_Moedas; i++)
     {
         fscanf(f, "%f", &moedas_aux[i]);
-        x.moedas[i] = (int)(moedas_aux[i] * 100); // Multiplica por 100 e converte para int
+        x.moedas[i] = (int)(moedas_aux[i] * 100);
     }
 
+    // Imprime os dados lidos para verificação
+    printf("\n");
     printf("Numero de moedas: %d\n", x.n_Moedas);
-    printf("Valor desejado: %d\n", x.valor_alvo);
+    printf("Valor desejado: %d (em centimos)\n", x.valor_alvo);
     printf("Moedas: ");
     for (i = 0; i < x.n_Moedas; i++)
         printf("%d ", x.moedas[i]);
     printf("\n");
 
+    // Inicializa parâmetros adicionais do problema
+    x.popsize = 100;                // Tamanho da população
+    x.pm = 0.01;                    // Probabilidade de mutação
+    x.pr = 0.7;                     // Probabilidade de recombinação
+    x.tamTor = 2;                   // Tamanho do torneio
+    x.n_Geracoes = 5000;            // Número de gerações
+    x.ro = 0.0;                     // Constante para avaliação com penalização
 
-    // Definir outros parâmetros
-    x.popsize = 100; // Exemplo de tamanho da população
-    x.pm = 0.01;     // Exemplo de probabilidade de mutação
-    x.pr = 0.7;      // Exemplo de probabilidade de recombinação
-    x.tamTor = 2;     // Exemplo de tamanho do torneio
-    x.n_Geracoes = 5000; // Exemplo de número de gerações
-    x.ro = 0.0;      // Exemplo de constante para avaliação com penalização
-
-    fclose(f);
-    return x;
+    fclose(f); // Fecha o ficheiro
+    return x; // Retorna a estrutura
 }
 
-// Inicializa o gerador de números aleatórios
+// Função para ler os dados de uma instância específica
+void ler_instancia(char *nome, int *n, int *v, int **moedas) {
+    FILE *f = fopen(nome, "r");
+    if (!f) { // Verifica se o ficheiro foi aberto com sucesso
+        perror("Erro ao abrir o ficheiro");
+        exit(1);
+    }
+
+    double aux; // Variável auxiliar para leitura do valor alvo
+
+    // Lê o número de moedas e o valor alvo
+    fscanf(f, "%d %lf", n, &aux);
+    *v = (int)(aux * 100); // Converte o valor para cêntimos
+
+    *moedas = malloc(sizeof(double) * (*n)); // Aloca memória para armazenar os valores das moedas
+    if (*moedas == NULL) { // Verifica se a alocação foi bem-sucedida
+        printf("Erro ao alocar memoria\n");
+        fclose(f);
+        exit(1);
+    }
+
+    // Lê os valores das moedas e converte-os para cêntimos
+    double *auxiliarMoedas = malloc(sizeof(double) * (*n));
+    if (auxiliarMoedas == NULL) { // Verifica se a alocação foi bem-sucedida
+        printf("Erro ao alocar memoria\n");
+        fclose(f);
+        exit(1);
+    }
+    for (int i = 0; i < *n; i++) {
+        fscanf(f, "%lf", &auxiliarMoedas[i]);
+        (*moedas)[i] = (int)(auxiliarMoedas[i] * 100);
+    }
+    free(auxiliarMoedas); // Liberta a memória auxiliar
+    fclose(f); // Fecha o ficheiro
+}
+
+// Inicializa o gerador de números aleatórios com base no tempo atual
 void init_rand()
 {
-    srand((unsigned)time(NULL)); // Define a semente com base no tempo atual
+    srand((unsigned)time(NULL)); // Define a semente para a geração de números aleatórios
 }
 
-// Retorna um valor inteiro aleatório entre min e max (inclusive)
+// Gera um número inteiro aleatório entre min e max (inclusive)
 int random_l_h(int min, int max)
 {
     return min + rand() % (max - min + 1);
 }
 
-// Retorna um valor real aleatório no intervalo [0, 1]
+// Gera um número real aleatório no intervalo [0, 1]
 float rand_01()
 {
     return ((float)rand()) / RAND_MAX;
 }
 
-// Simula o lancamento de uma moeda, retornando o valor 0 ou 1
-int flip()
-{
-    if ((((float)rand()) / RAND_MAX) < 0.5)
-        return 0;
-    else
-        return 1;
-}
-
-// Gera a solução inicial
-// Parâmetros de entrada: Solução, Número de moedas
+// Gera uma solução inicial com zero moedas utilizadas
 void gera_sol_inicial(int *solucao, int n_moedas)
 {
     for (int i = 0; i < n_moedas; i++) {
         solucao[i] = 0; // Inicialmente, nenhuma moeda é usada
-        //sol[i] = random_l_h(0, 10); // Gera uma quantidade aleatória de cada moeda
     }
 }
 
-
-// Escreve a solução no ecrã
-// Exibe a solução no formato [qtd_moeda1, qtd_moeda2, ...]
-// Parâmetros de entrada: Solução, Valores das moedas, Número de moedas
+// Escreve a solução atual (quantidade de cada moeda) no formato de lista
 void escreve_solucao(int *solucao, int *valores_moedas, int n_moedas)
 {
-    int valor_soma = 0; // Soma acumulada para validar a solução
-    int total_moedas = 0; // Contagem do número total de moedas
-
     printf("[");
     for (int i = 0; i < n_moedas; i++) {
         printf("%d", solucao[i]); // Exibe a quantidade de cada moeda
@@ -106,16 +127,7 @@ void escreve_solucao(int *solucao, int *valores_moedas, int n_moedas)
     printf("]");
 }
 
-
-void print_total(int *solucao, double *valor_moedas ,int n_moedas){
-    double sum;
-    for (int i = 0; i < n_moedas; i++) {
-        sum += solucao[i]*valor_moedas[i]; // Exibe a quantidade de cada moeda
-    }
-
-    printf("V final: %.2f\n",sum);
-}
-
+// Substitui uma solução por outra
 void substitui(int solucao[], int nova_solucao[], int n_moedas)
 {
     for (int i = 0; i < n_moedas; i++) {
@@ -123,95 +135,45 @@ void substitui(int solucao[], int nova_solucao[], int n_moedas)
     }
 }
 
-// Criacao da populacao inicial. O vector e alocado dinamicamente
-// Parametro de entrada: Estrutura com parametros
+// Inicializa uma população de cromossomas
 pchrom init_populacao(struct info d)
 {
     int i, j;
-    pchrom indiv;
-
-    indiv = malloc(sizeof(chrom) * d.popsize);
-    if (indiv == NULL)
-    {
-        printf("Erro na alocacao de memoria\n");
+    pchrom indiv = malloc(sizeof(chrom) * d.popsize);
+    if (indiv == NULL) {
+        printf("Erro na alocação de memoria\n");
         exit(1);
     }
 
-    for (i = 0; i < d.popsize; i++)
-    {
-        for (j = 0; j < d.n_Moedas; j++)
-        {
-            indiv[i].p[j] = random_l_h(0, (int)(d.valor_alvo / d.moedas[j])); // Gera um número aleatório de moedas
+    for (i = 0; i < d.popsize; i++) {
+        for (j = 0; j < d.n_Moedas; j++) {
+            // Gera uma quantidade aleatória para cada moeda
+            indiv[i].p[j] = random_l_h(0, (int)(d.valor_alvo / d.moedas[j]));
         }
-        //A pesquisa local pode ser usada para criar as soluções da população inicial;
+
+        // Aplica pesquisa local se o tipo de algoritmo for híbrido
         if(d.parametro->type == 2)
-            trepa_colinas_hibrido(indiv[i].p, d, 100); // Aplica trepa-colinas
+            trepa_colinas_hibrido(indiv[i].p, d, 100);
     }
 
-    return indiv;
+    return indiv; // Retorna a população inicializada
 }
 
-// Atualiza a melhor solucao encontrada
-// Parametro de entrada: populacao actual, estrutura com parametros e a melhor solucao encontrada ate a geracao imediatamente anterior
-// Parametro de saida: a melhor solucao encontrada ate a geracao actual
+// Retorna o melhor indivíduo de uma população
 chrom get_best(pchrom pop, struct info d, chrom best)
 {
-    int i;
-
-    for (i = 0; i < d.popsize; i++)
-    {
-        if (best.fitness > pop[i].fitness) // Problema de minimização
+    for (int i = 0; i < d.popsize; i++) {
+        if (best.fitness > pop[i].fitness) // Critério de minimização
             best = pop[i];
     }
     return best;
 }
 
-// Escreve uma solucao na consola
-// Parametro de entrada: populacao actual e estrutura com parametros
+// Escreve as informações do melhor indivíduo encontrado
 void write_best(chrom x, struct info d)
 {
     printf("\nMelhor individuo: %4.1f\n", x.fitness);
-    for (int i = 0; i < d.n_Moedas; i++)
+    for (int i = 0; i < d.n_Moedas; i++) {
         printf("Moeda %d (Valor: %d): %d\n", i, d.moedas[i], x.p[i]);
+    }
 }
-
-
-// Leitura do ficheiro de input
-// Par�metros de entrada: Nome do ficheiro, nome, N�mero de v�rtices, n, N�mero de itera��es, iter
-// Par�metros de sa�da: Matriz de adjac�ncias, p
-void ler_instancia(char *nome, int *n, int *v, int **moedas) {
-    FILE *f = fopen(nome, "r");
-    if (!f) {
-        perror("Erro ao abrir o ficheiro");
-        exit(1);
-    }
-
-    double aux;
-    // Lê o número de moedas e o valor-alvo
-    fscanf(f, "%d %lf", n, &aux);
-    *v = (int)(aux * 100);
-
-    *moedas = malloc(sizeof(double) * (*n));
-    if (*moedas == NULL) {
-        printf("Erro ao alocar memória\n");
-        fclose(f);
-        exit(1);
-    }
-
-// Lê os valores das moedas
-    double *auxiliarMoedas = malloc(sizeof(double) * (*n));
-    if (auxiliarMoedas == NULL) {
-        printf("Erro ao alocar memória\n");
-        fclose(f);
-        exit(1);
-    }
-    for (int i = 0; i < *n; i++) {
-        fscanf(f, "%lf", &auxiliarMoedas[i]);
-        (*moedas)[i] = (int)(auxiliarMoedas[i] * 100);
-    }
-    free(auxiliarMoedas);
-
-    fclose(f);
-}
-
-
