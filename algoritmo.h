@@ -3,7 +3,6 @@
 #define MAX_OBJ 1000		// Numero maximo de objetos
 
 
-
 typedef struct {
     int n_Interacoes;		    // Número de iterações
     int n_vizinhancas;	        // Número de vizinhanças
@@ -74,7 +73,7 @@ void torneio_geral(pchrom pop, struct info d, pchrom parents);
 
 void operadores_geneticos(pchrom parents, struct info d, pchrom offspring);
 
-void crossover(pchrom parents, struct info d, pchrom offspring);
+void recombinacao_um_ponto_corte(pchrom parents, struct info d, pchrom offspring);
 
 void recombinacao_dois_pontos_corte(pchrom parents, struct info d, pchrom offspring);
 

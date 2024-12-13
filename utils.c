@@ -44,9 +44,9 @@ struct info ler_dados(char *filename, int mat[][2])
     // Inicializa parâmetros adicionais do problema
     x.popsize = 100;                // Tamanho da população
     x.pm = 0.01;                    // Probabilidade de mutação
-    x.pr = 0.7;                     // Probabilidade de recombinação
     x.tamTor = 2;                   // Tamanho do torneio
-    x.n_Geracoes = 5000;            // Número de gerações
+    x.pr = 0.3;                     // Probabilidade de recombinação
+    x.n_Geracoes = 2500;            // Número de gerações
     x.ro = 0.0;                     // Constante para avaliação com penalização
 
     fclose(f); // Fecha o ficheiro

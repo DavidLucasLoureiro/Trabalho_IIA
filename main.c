@@ -6,7 +6,6 @@
 #include "utils.h"
 
 #define DEFAULT_RUNS 10
-
 parameters parametro;
 
 int main(int argc, char *argv[])
@@ -19,7 +18,7 @@ int main(int argc, char *argv[])
     // 1 - algoritmo evolutivo
     // 2 - Hibrido, pesquisa local é usada para criar as soluções da população inicial
     // 3 - Hibrido, pesquisa local é usada para refinar as soluções da última população
-    parametro.type = 0;
+    parametro.type = 1;
 
 
     // Configuração do trepa-colinas

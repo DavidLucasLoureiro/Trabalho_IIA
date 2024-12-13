@@ -168,7 +168,7 @@ void operadores_geneticos(pchrom parents, struct info d, pchrom offspring)
 {
     // Aplica recombinação
     if(d.parametro->Args_evolucao.recombinacao == 1)
-        crossover(parents, d, offspring);
+        recombinacao_um_ponto_corte(parents, d, offspring);
     else
         recombinacao_dois_pontos_corte(parents, d, offspring);
 
@@ -180,7 +180,7 @@ void operadores_geneticos(pchrom parents, struct info d, pchrom offspring)
 }
 
 // Recombinação com um ponto de corte
-void crossover(pchrom parents, struct info d, pchrom offspring)
+void recombinacao_um_ponto_corte(pchrom parents, struct info d, pchrom offspring)
 {
     int ponto;
 
@@ -303,7 +303,7 @@ void mutacao_troca(pchrom offspring, struct info d)
 // Subida de colinas híbrida
 int trepa_colinas_hibrido(int solucao[], struct info d, int num_iter)
 {
-    int *nova_solucao, custo, custo_viz, valido;
+    int *nova_solucao, custo, custo_vizinho, valido;
 
     // Aloca memória para a nova solução
     nova_solucao = malloc(sizeof(int) * d.n_Moedas);
@@ -325,23 +325,23 @@ int trepa_colinas_hibrido(int solucao[], struct info d, int num_iter)
             gera_vizinho2(solucao, nova_solucao, d.n_Moedas);
 
         // Calcula o custo da nova solução vizinha
-        custo_viz = evolutivo_reparado(nova_solucao, d, &valido);
+        custo_vizinho = evolutivo_reparado(nova_solucao, d, &valido);
 
         // Verifica se deve aceitar a nova solução
         if (d.parametro->Args_trepa.custoIgual == 0)
         {
-            if (custo_viz < custo)
+            if (custo_vizinho < custo)
             {
                 substitui(solucao, nova_solucao, d.n_Moedas);
-                custo = custo_viz;
+                custo = custo_vizinho;
             }
         }
         else
         {
-            if (custo_viz <= custo)
+            if (custo_vizinho <= custo)
             {
                 substitui(solucao, nova_solucao, d.n_Moedas);
-                custo = custo_viz;
+                custo = custo_vizinho;
             }
         }
     }
