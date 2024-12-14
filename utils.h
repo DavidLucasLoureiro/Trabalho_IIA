@@ -1,4 +1,4 @@
-struct info ler_dados(char *filename, int mat[][2]);
+struct info ler_dados(char *filename, int mat[][2], parameters parametro);
 
 void ler_instancia(char *nome, int *n, int *v, int **moedas);
 

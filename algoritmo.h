@@ -17,6 +17,9 @@ typedef struct {
     float probMutacao;		    // Probabilidade de mutação
     int selecao;                // Metodo de seleção
     int tipo;		            // Tipo (reparação ou penalização)
+    int n_Geracoes;             // Número de gerações
+    float ro;                   // Constante para avaliação com penalização
+    int tamTor;                 // Tamanho do torneio para seleção do pai da próxima geração
 
 } ARGS_evolucao;
 

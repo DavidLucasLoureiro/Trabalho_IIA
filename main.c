@@ -20,13 +20,13 @@ int main(int argc, char *argv[])
     // 3 - Hibrido, pesquisa local é usada para refinar as soluções da última população
     parametro.type = 1;
 
-
+    //file5.txt
     // Configuração do trepa-colinas
-    parametro.Args_trepa.n_Interacoes = 5000;           // Número de iterações
+    parametro.Args_trepa.n_Interacoes = 1000;           // Número de iterações
 
     // 1 - usa geravizinho1
     // 2 - usa geravizinho2
-    parametro.Args_trepa.n_vizinhancas = 2;             // Método de geração de vizinhos
+    parametro.Args_trepa.n_vizinhancas = 1;             // Método de geração de vizinhos
 
     // 0 - não permite custo igual
     // 1 - permite custo igual
@@ -34,21 +34,30 @@ int main(int argc, char *argv[])
 
 
     // Configuração do algoritmo evolutivo
-    parametro.Args_evolucao.pop = 100;                  // Tamanho da população
+    parametro.Args_evolucao.pop = 50;                  // Tamanho da população
+
+    // Configuraçao de Gerações
+    parametro.Args_evolucao.n_Geracoes = 2500;          //Número de gerações
+
+    //Configuração do ro
+    parametro.Args_evolucao.ro = 0.0;                   // Constante para avaliação com penalização
+
+    //Configuração do tamanho do torneio
+    parametro.Args_evolucao.tamTor = 2;                 //Tamanho do torneio
 
     // 1 - Recombinação com um ponto de corte
     // 2 - Recombinação com dois pontos de corte
     parametro.Args_evolucao.recombinacao = 1;           // Método de recombinação
-    parametro.Args_evolucao.probRecombinacao = 0.5;     // Probabilidade de recombinação
+    parametro.Args_evolucao.probRecombinacao = 0.01;     // Probabilidade de recombinação
 
     // 1 - Mutaçao binária
     // 2 - Mutaçao por troca
     parametro.Args_evolucao.mutacao = 1;                // Método de mutação
-    parametro.Args_evolucao.probMutacao = 0.05;         // Probabilidade de mutação
+    parametro.Args_evolucao.probMutacao = 0.3;         // Probabilidade de mutação
 
     // 1 - Seleção por torneio
     // 2 - Seleção por torneio generalizado
-    parametro.Args_evolucao.selecao = 2;
+    parametro.Args_evolucao.selecao = 1;
 
     // 1 - Penalização
     // 2 - Reparação
@@ -79,12 +88,12 @@ int main(int argc, char *argv[])
 
         // Inicializa os dados do problema
         init_rand();
-        EA_param = ler_dados(nome_fich, NULL);
+        EA_param = ler_dados(nome_fich, NULL, parametro);
         EA_param.parametro = &parametro;
         EA_param.popsize = parametro.Args_evolucao.pop;
         EA_param.pm = parametro.Args_evolucao.probMutacao;
         EA_param.pr = parametro.Args_evolucao.probRecombinacao;
-        EA_param.tamTor = 50;
+        EA_param.tamTor = parametro.Args_evolucao.tamTor;
 
         for (r = 0; r < repeticoes; r++) {
             printf("\nRepeticao %d:\n", r + 1);
@@ -111,7 +120,7 @@ int main(int argc, char *argv[])
             }
 
             if (parametro.type == 3)
-                trepa_colinas_hibrido(best_run.p, EA_param, 100);
+                trepa_colinas_hibrido(best_run.p, EA_param, EA_param.parametro->Args_trepa.n_Interacoes);
 
             for (inv = 0, i = 0; i < EA_param.popsize; i++)
                 if (pop[i].valido == 0)

@@ -5,7 +5,7 @@
 #include "utils.h"
 
 // Função que lê os dados de entrada de um ficheiro
-struct info ler_dados(char *filename, int mat[][2])
+struct info ler_dados(char *filename, int mat[][2], parameters parametro)
 {
     struct info x; // Estrutura que armazenará os dados do problema
     FILE *f; // Ponteiro para o ficheiro
@@ -42,12 +42,12 @@ struct info ler_dados(char *filename, int mat[][2])
     printf("\n");
 
     // Inicializa parâmetros adicionais do problema
-    x.popsize = 100;                // Tamanho da população
-    x.pm = 0.01;                    // Probabilidade de mutação
-    x.tamTor = 2;                   // Tamanho do torneio
-    x.pr = 0.3;                     // Probabilidade de recombinação
-    x.n_Geracoes = 2500;            // Número de gerações
-    x.ro = 0.0;                     // Constante para avaliação com penalização
+    x.popsize = parametro.Args_evolucao.pop;                // Tamanho da população
+    x.pm = parametro.Args_evolucao.probMutacao;                    // Probabilidade de mutação
+    x.tamTor = parametro.Args_evolucao.tamTor;                                       // Tamanho do torneio
+    x.pr = parametro.Args_evolucao.probRecombinacao;                     // Probabilidade de recombinação
+    x.n_Geracoes = parametro.Args_evolucao.n_Geracoes;            // Número de gerações
+    x.ro = parametro.Args_evolucao.ro;                     // Constante para avaliação com penalização
 
     fclose(f); // Fecha o ficheiro
     return x; // Retorna a estrutura
@@ -153,7 +153,7 @@ pchrom init_populacao(struct info d)
 
         // Aplica pesquisa local se o tipo de algoritmo for híbrido
         if(d.parametro->type == 2)
-            trepa_colinas_hibrido(indiv[i].p, d, 100);
+            trepa_colinas_hibrido(indiv[i].p, d, d.parametro->Args_trepa.n_Interacoes);
     }
 
     return indiv; // Retorna a população inicializada

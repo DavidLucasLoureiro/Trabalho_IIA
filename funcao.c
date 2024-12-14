@@ -10,7 +10,6 @@ int calcula_fit(int sol[], int valores_moedas[], int n_moedas, int valor_alvo)
 {
     int valor_soma = 0;  // Soma total em valor monetário
     int total_moedas = 0; // Soma total de moedas utilizadas
-
     // Itera sobre cada moeda, calculando a soma total e o número total de moedas
     for (int i = 0; i < n_moedas; i++) {
         total_moedas += sol[i]; // Conta o número de moedas usadas

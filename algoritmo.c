@@ -68,7 +68,6 @@ int trepa_colinas(int solucao[], int valores_moedas[], int n_moedas, int valor_a
 
     // Calcula o custo inicial da solução
     int custo = calcula_fit(solucao, valores_moedas, n_moedas, valor_alvo);
-
     for (int i = 0; i < num_iter; i++) {
 
         // Gera vizinho baseado no número de vizinhanças configurado
