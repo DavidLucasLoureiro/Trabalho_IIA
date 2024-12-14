@@ -36,13 +36,10 @@ int main(int argc, char *argv[])
     // Configuração do algoritmo evolutivo
     parametro.Args_evolucao.pop = 50;                  // Tamanho da população
 
-    // Configuraçao de Gerações
-    parametro.Args_evolucao.n_Geracoes = 2500;          //Número de gerações
+    parametro.Args_evolucao.n_Geracoes = 2500;          // Número de gerações
 
-    //Configuração do ro
     parametro.Args_evolucao.ro = 0.0;                   // Constante para avaliação com penalização
 
-    //Configuração do tamanho do torneio
     parametro.Args_evolucao.tamTor = 2;                 //Tamanho do torneio
 
     // 1 - Recombinação com um ponto de corte
@@ -78,69 +75,7 @@ int main(int argc, char *argv[])
 
     if (repeticoes <= 0)
         return 0;
-
-    if (parametro.type >= 1) {
-        struct info EA_param;
-        pchrom pop = NULL, parents = NULL;
-        chrom best_run, best_ever;
-        int gen_actual, r, i, inv;
-        float mbf = 0.0;
-
-        // Inicializa os dados do problema
-        init_rand();
-        EA_param = ler_dados(nome_fich, NULL, parametro);
-        EA_param.parametro = &parametro;
-        EA_param.popsize = parametro.Args_evolucao.pop;
-        EA_param.pm = parametro.Args_evolucao.probMutacao;
-        EA_param.pr = parametro.Args_evolucao.probRecombinacao;
-        EA_param.tamTor = parametro.Args_evolucao.tamTor;
-
-        for (r = 0; r < repeticoes; r++) {
-            printf("\nRepeticao %d:\n", r + 1);
-            pop = init_populacao(EA_param);
-            evolutivo(pop, EA_param);
-            gen_actual = 1;
-            best_run = pop[0];
-            best_run = get_best(pop, EA_param, best_run);
-            parents = malloc(sizeof(chrom) * EA_param.popsize);
-            if (parents == NULL) {
-                printf("Erro na alocacao de memoria\n");
-                exit(1);
-            }
-
-            while (gen_actual <= EA_param.n_Geracoes) {
-                if (parametro.Args_evolucao.selecao == 1)
-                    torneio(pop, EA_param, parents);
-                else
-                    torneio_geral(pop, EA_param, parents);
-                operadores_geneticos(parents, EA_param, pop);
-                evolutivo(pop, EA_param);
-                best_run = get_best(pop, EA_param, best_run);
-                gen_actual++;
-            }
-
-            if (parametro.type == 3)
-                trepa_colinas_hibrido(best_run.p, EA_param, EA_param.parametro->Args_trepa.n_Interacoes);
-
-            for (inv = 0, i = 0; i < EA_param.popsize; i++)
-                if (pop[i].valido == 0)
-                    inv++;
-
-            write_best(best_run, EA_param);
-            printf("\nPercentagem Invalidos: %f\n", 100 * (float)inv / EA_param.popsize);
-            mbf += best_run.fitness;
-            if (r == 0 || best_run.fitness < best_ever.fitness)
-                best_ever = best_run;
-
-            free(parents);
-            free(pop);
-        }
-
-        printf("\n\nMBF: %f\n", mbf / repeticoes);
-        printf("\nMelhor solucao encontrada\n");
-        write_best(best_ever, EA_param);
-
-    } else {
+    if (parametro.type == 0) {
         int *moedas;
         int V;
         int n;
@@ -181,6 +116,73 @@ int main(int argc, char *argv[])
         printf("Custo final: %d\n", melhor_custo);
         free(sol);
         free(best);
+
+    } else if (parametro.type >= 1) {
+        struct info EA_param;
+        pchrom pop = NULL, parents = NULL;
+        chrom best_run, best_ever;
+        int gen_actual, r, i, inv;
+        float mbf = 0.0;
+
+        // Inicializa os dados do problema
+        init_rand();
+        EA_param = ler_dados(nome_fich, NULL, parametro);
+        EA_param.parametro = &parametro;
+        EA_param.popsize = parametro.Args_evolucao.pop;
+        EA_param.pm = parametro.Args_evolucao.probMutacao;
+        EA_param.pr = parametro.Args_evolucao.probRecombinacao;
+        EA_param.tamTor = parametro.Args_evolucao.tamTor;
+
+        for (r = 0; r < repeticoes; r++) {
+            printf("\nRepeticao %d:\n", r + 1);
+            pop = init_populacao(EA_param);
+            // Se type == 2, aplicar trepa-colinas na população inicial
+            if (parametro.type == 2) {
+                for (int j = 0; j < EA_param.popsize; j++) {
+                    trepa_colinas_hibrido(pop[j].p, EA_param, parametro.Args_trepa.n_Interacoes);
+                }
+            }
+            evolutivo(pop, EA_param);
+            gen_actual = 1;
+            best_run = pop[0];
+            best_run = get_best(pop, EA_param, best_run);
+            parents = malloc(sizeof(chrom) * EA_param.popsize);
+            if (parents == NULL) {
+                printf("Erro na alocacao de memoria\n");
+                exit(1);
+            }
+
+            while (gen_actual <= EA_param.n_Geracoes) {
+                if (parametro.Args_evolucao.selecao == 1)
+                    torneio(pop, EA_param, parents);
+                else
+                    torneio_geral(pop, EA_param, parents);
+                operadores_geneticos(parents, EA_param, pop);
+                evolutivo(pop, EA_param);
+                best_run = get_best(pop, EA_param, best_run);
+                gen_actual++;
+            }
+
+            if (parametro.type == 3)
+                trepa_colinas_hibrido(best_run.p, EA_param, parametro.Args_trepa.n_Interacoes);
+
+            for (inv = 0, i = 0; i < EA_param.popsize; i++)
+                if (pop[i].valido == 0)
+                    inv++;
+
+            write_best(best_run, EA_param);
+            printf("\nPercentagem Invalidos: %f\n", 100 * (float)inv / EA_param.popsize);
+            mbf += best_run.fitness;
+            if (r == 0 || best_run.fitness < best_ever.fitness)
+                best_ever = best_run;
+
+            free(parents);
+            free(pop);
+        }
+
+        printf("\n\nMBF: %f\n", mbf / repeticoes);
+        printf("\nMelhor solucao encontrada\n");
+        write_best(best_ever, EA_param);
     }
     return 0;
 }
